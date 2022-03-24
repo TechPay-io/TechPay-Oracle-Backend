@@ -32,13 +32,13 @@ for production use.
 ## Running the Oracle Backend server
 
 You need access to an RPC interface of an **Photon Sirius** node to run the **Oracle Backend** server. 
-Please follow [Sirius](https://github.com/TechPay-io/go-sirius) instructions 
+Please follow [Photon](https://github.com/TechPay-io/go-photon) instructions 
 to build and run the node. You can obtain access to a remotely running instance
-of Sirius, too. 
+of Photon, too. 
 
-We recommend using local IPC channel for communication between a Sirius node and the 
+We recommend using local IPC channel for communication between a Photon node and the 
 Oracle Backend server for performance and security reasons. Please consider security implications 
-of opening Sirius RPC to outside world access.
+of opening Photon RPC to outside world access.
 
 ### System.d Service unit file
 
