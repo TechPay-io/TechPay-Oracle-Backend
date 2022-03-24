@@ -1,0 +1,12 @@
+{
+  "name": "Binance TPC-USDT Feed",
+  "symbol": "TPCUSDT",
+  "api_point": "https://api.binance.com/api/v3/ticker/price?symbol=TPCUSDT",
+  "api_key": "",
+  "api_secret": "",
+  "contract": "0x",
+  "keystore": "",
+  "key_secret": "",
+  "pull_delay_milliseconds": 5000,
+  "write_barrier_pct": 2.0
+}
