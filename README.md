@@ -22,7 +22,7 @@ git clone https://github.com/TechPay-io/TechPay-Oracle-Backend.git
 go build -o ./build/oracle ./cmd/oracle
 ```
 
-The build output is `build/watchdog` executable.
+The build output is `build/oracle` executable.
 
 You don't need to clone the project into `$GOPATH` due to Go Modules tooling, 
 use any suitable location. We recommend moving the built Oracle Backend binary 
@@ -77,5 +77,5 @@ Adjust the service unit file to match your path and configuration details for Ph
 work path and Oracle Backend binary file location.
 
 Don't forget to update the System.d status to be able to use the new service file to start and stop 
-the Watchdog: `systemctl daemon-reload`. Manage the service start/stop using usual System.d commands, 
+the Watchdog: `systemctl enable oracle.service`. Manage the service start/stop using usual System.d commands, 
 i.e. `systemctl start oracle.service`.
