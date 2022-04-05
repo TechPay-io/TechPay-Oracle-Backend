@@ -6,6 +6,8 @@ package pricefeed
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"math"
 	"math/big"
@@ -160,11 +162,8 @@ func (pro *PriceOracle) pullPrice() (float64, int64, error) {
 	req, err := http.NewRequest(http.MethodGet, pro.cfg.ApiUrl, nil)
 	if err != nil {
 		//pullPrice pulls a new price from the coingeko
-		req, err = http.NewRequest(http.MethodGet, pro.cfg.CGApiUrl, nil)
-		if err != nil {
-			pro.sup.Log().Criticalf("can not create http API request; %s", err.Error())
-			return 0, 0, err
-		}
+		pro.sup.Log().Criticalf("can not create http API request; %s", err.Error())
+		return 0, 0, err
 	}
 
 	// set headers
@@ -198,7 +197,36 @@ func (pro *PriceOracle) pullPrice() (float64, int64, error) {
 		return 0, 0, err
 	}
 
-	return pro.decodePrice(body)
+	price, time, err := pro.decodePrice(body)
+	if err != nil {
+		req, err = http.NewRequest(http.MethodGet, pro.cfg.CGApiUrl, nil)
+		if err != nil {
+			pro.sup.Log().Criticalf("can not create http API request; %s", err.Error())
+			return 0, 0, err
+		}
+		req.Header.Set("User-Agent", "TechPay-Backend-Server v1.0")
+
+		// send request
+		res, err := pro.http.Do(req)
+		if err != nil {
+			pro.sup.Log().Errorf("http API request failed; %s", err.Error())
+			return 0, 0, err
+		}
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			pro.sup.Log().Errorf("can not read http response body; %s", err.Error())
+			return 0, 0, err
+		}
+
+		price, time, err := pro.decodePrice(body)
+		if err != nil {
+			pro.sup.Log().Errorf("can not read http response body; %s", err.Error())
+			return 0, 0, err
+		}
+		return price, time, err
+	}
+
+	return price, time, err
 }
 
 // decodePrice decodes remote price API response to get the actual price.
@@ -206,9 +234,11 @@ func (pro *PriceOracle) decodePrice(res []byte) (float64, int64, error) {
 	// prep price response and error containers
 	var err error
 	var data struct {
-		Symbol   string  `json:"symbol"`
-		PriceStr string  `json:"price"`
-		Price    float64 `json:"-"`
+		Symbol   string                 `json:"symbol"`
+		PriceStr string                 `json:"price"`
+		Price    float64                `json:"-"`
+		Message  string                 `json:"msg"`
+		Techpay  map[string]interface{} `json:"techpay"`
 	}
 
 	// try to decode the data
@@ -216,9 +246,19 @@ func (pro *PriceOracle) decodePrice(res []byte) (float64, int64, error) {
 		pro.sup.Log().Errorf("can not decode API call response; %s", err.Error())
 		return 0, 0, err
 	}
+	if data.Message == "Invalid symbol." {
+		pro.sup.Log().Errorf("Error response; %s", data.Message)
+		return 0, 0, errors.New(data.Message)
+	}
 
 	// decode price from string
-	data.Price, err = strconv.ParseFloat(data.PriceStr, 64)
+	//var val interface{}
+	val := data.PriceStr
+	if val == "" {
+		val = fmt.Sprintf("%v", data.Techpay["usd"])
+	}
+	// decode price from string
+	data.Price, err = strconv.ParseFloat(val, 64)
 	if err != nil {
 		pro.sup.Log().Errorf("can not parse price from API call; %s", err.Error())
 		return 0, 0, err
