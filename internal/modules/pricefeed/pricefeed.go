@@ -159,8 +159,12 @@ func (pro *PriceOracle) pullPrice() (float64, int64, error) {
 	// prep a http request to the Binance API
 	req, err := http.NewRequest(http.MethodGet, pro.cfg.ApiUrl, nil)
 	if err != nil {
-		pro.sup.Log().Criticalf("can not create http API request; %s", err.Error())
-		return 0, 0, err
+		//pullPrice pulls a new price from the coingeko
+		req, err = http.NewRequest(http.MethodGet, pro.cfg.CGApiUrl, nil)
+		if err != nil {
+			pro.sup.Log().Criticalf("can not create http API request; %s", err.Error())
+			return 0, 0, err
+		}
 	}
 
 	// set headers

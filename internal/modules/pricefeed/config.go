@@ -4,8 +4,9 @@ package pricefeed
 
 import (
 	"encoding/json"
-	"github.com/ethereum/go-ethereum/common"
 	"io/ioutil"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 // PriceOracleConfig represents a configuration
@@ -15,7 +16,9 @@ type PriceOracleConfig struct {
 	Symbol          string         `json:"symbol"`
 	Decimals        uint32         `json:"decimals"`
 	ApiUrl          string         `json:"api_point"`
+	CGApiUrl        string         `json:"cg_api_point"` //coin geko url price
 	ApiKey          string         `json:"api_key"`
+	CGApiKey        string         `json:"cg_api_key"` //coingeko key
 	ApiSecret       string         `json:"api_secret"`
 	Token           common.Address `json:"token"`
 	PriceAggregate  common.Address `json:"aggregate"`
