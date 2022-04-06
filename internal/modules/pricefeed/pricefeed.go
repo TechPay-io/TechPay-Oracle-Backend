@@ -247,7 +247,8 @@ func (pro *PriceOracle) decodePrice(res []byte) (float64, int64, error) {
 		return 0, 0, err
 	}
 	if data.Message == "Invalid symbol." {
-		pro.sup.Log().Errorf("Error response; %s", data.Message)
+		// pro.sup.Log().Errorf("Error response; %s", data.Message)
+
 		return 0, 0, errors.New(data.Message)
 	}
 
@@ -275,7 +276,6 @@ func (pro *PriceOracle) writePrice(price float64, stamp int64) {
 
 	// prep Eth client
 	eth := ethclient.NewClient(pro.sup.Sirius())
-
 	// connect the contract
 	contract, err := NewPriceFeedContract(pro.cfg.PriceAggregate, eth)
 	if err != nil {
@@ -292,6 +292,7 @@ func (pro *PriceOracle) writePrice(price float64, stamp int64) {
 
 	// send the price multiplied to the destination decimals
 	val, _ := new(big.Float).Mul(big.NewFloat(price), pro.decimals).Int(nil)
+
 	err = pro.updateAnswer(contract, sig, val, new(big.Int).SetInt64(stamp))
 	if err != nil {
 		pro.sup.Log().Errorf("can not push new price to the contract; %s", err.Error())
